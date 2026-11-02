@@ -1,0 +1,70 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cari folder proyek
+        id: find
+        run: |
+          echo "Isi root repositori:"
+          ls -la
+          F=$(find . -maxdepth 3 -name package.json -not -path '*/node_modules/*' | head -n 1)
+          if [ -z "$F" ]; then
+            echo "::error::package.json tidak ditemukan. Upload ulang ISI folder proyek (bukan folder pembungkusnya)."
+            exit 1
+          fi
+          DIR=$(dirname "$F")
+          echo "Folder proyek: $DIR"
+          ls -la "$DIR"
+          for f in capacitor.config.json index.html src; do
+            [ -e "$DIR/$f" ] || { echo "::error::'$f' tidak ada di $DIR"; exit 1; }
+          done
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        working-directory: ${{ steps.find.outputs.dir }}
+        run: npm install --no-audit --no-fund
+
+      - name: Build web (vite)
+        working-directory: ${{ steps.find.outputs.dir }}
+        run: npx vite build
+
+      - name: Create Android project
+        working-directory: ${{ steps.find.outputs.dir }}
+        run: npx cap add android
+
+      - name: Enable large heap
+        working-directory: ${{ steps.find.outputs.dir }}
+        run: sed -i 's/<application/<application android:largeHeap="true"/' android/app/src/main/AndroidManifest.xml
+
+      - name: Sync web assets
+        working-directory: ${{ steps.find.outputs.dir }}
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: ${{ steps.find.outputs.dir }}/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MangaTranslate-APK
+          path: ${{ steps.find.outputs.dir }}/android/app/build/outputs/apk/debug/app-debug.apk
