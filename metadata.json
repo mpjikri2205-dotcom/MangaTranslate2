@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Remix: Manga Translator \u0026 PDF Creator",
+  "description": "Upload manga images or zip files, translate them to Indonesian using AI, and export as a PDF. Want to be More Powerfull to Replace Text itself in 90% accuracy. ",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
