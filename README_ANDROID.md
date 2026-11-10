@@ -35,3 +35,21 @@ Salin `src/lib/platform.ts`, `apiClient.ts`, `nativeFile.ts`, lalu di `App.tsx`:
 2. ganti semua `fetch('/api/` menjadi `apiFetch('/api/`;
 3. di awal `try {` pada `triggerServerSideDownload` tambahkan:
    `if (isNative()) return await saveBlobNative(fileBlob, filename);`
+
+## Folder simpan ekspor (Android)
+Ekspor PDF/ZIP langsung tersimpan tanpa dialog per file:
+- Default: `Download/MangaTranslate/` di HP. Ganti: Pengaturan (gerigi) -> "Folder simpan ekspor" -> **Pilih folder...** (sekali saja).
+- Kartu itu menampilkan status: **hijau "Plugin penyimpanan aktif"** atau **merah + alasan error**.
+- Penyimpanan memakai plugin lokal `plugins/capacitor-mtfilesaver` (dipasang otomatis oleh `npm install` + `cap sync`).
+
+### Memperbarui APK yang sudah ada (ikuti persis)
+1. Ekstrak ZIP ini dan TIMPA SEMUA file di folder proyek yang dipakai Android Studio (folder yang punya `android/`).
+   Pastikan folder `plugins/`, `scripts/`, `package.json`, dan `update-android.bat` ikut tertimpa. `node_modules` dan `android` jangan dihapus.
+2. Klik dua kali **update-android.bat** (menjalankan `npm install` lalu `npm run android:sync`).
+   Cari baris `[android-setup] OK`. Jika ada PERINGATAN, kirim isi jendela itu.
+3. Android Studio: **File > Sync Project with Gradle Files**, lalu **Build > Generate APKs**.
+4. Pasang APK baru DI ATAS yang lama (tanpa uninstall).
+
+## Seleksi (gaya Google Drive)
+- Halaman manga / proyek / blok teks: **tahan ~0,3 detik lalu geser naik/turun**; daftar otomatis menggulir di tepi layar.
+- Setelah ada yang terpilih, ketuk item untuk menambah/mengurangi pilihan. Bar di bawah: Terjemahkan terpilih, Hapus, Batal.

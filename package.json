@@ -1,19 +1,22 @@
 {
-  "name": "react-example",
+  "name": "manga-translate",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build": "vite build",
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "build:web": "vite build",
-    "android:add": "cap add android",
-    "android:sync": "vite build && cap sync android",
-    "android:open": "cap open android"
+    "android:add": "cap add android && node scripts/android-setup.mjs",
+    "android:sync": "vite build && cap sync android && node scripts/android-setup.mjs",
+    "android:open": "cap open android",
+    "android:setup": "node scripts/android-setup.mjs",
+    "build:server": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "prebuild": "node scripts/verify-files.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
@@ -37,7 +40,8 @@
     "@capacitor/core": "^7.0.0",
     "@capacitor/android": "^7.0.0",
     "@capacitor/filesystem": "^7.0.0",
-    "@capacitor/share": "^7.0.0"
+    "@capacitor/share": "^7.0.0",
+    "capacitor-mtfilesaver": "file:./plugins/capacitor-mtfilesaver"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

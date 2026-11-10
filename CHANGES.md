@@ -59,3 +59,45 @@ lalu `npm run dev`. Tidak ada dependensi baru.
 - src/lib/apiClient.ts: /api/translate, /api/free-translate, /api/env-check dikerjakan di dalam aplikasi saat berjalan sebagai APK; di web tetap lewat server.ts.
 - src/lib/nativeFile.ts: ekspor PDF/ZIP lewat lembar Bagikan Android.
 - .github/workflows/build-apk.yml: membangun APK otomatis di GitHub (tanpa Android Studio). Lihat README_ANDROID.md.
+
+## Update 7 - Android: ekspor & impor
+- Ekspor langsung ke folder (default Download/MangaTranslate atau folder pilihan) lewat plugin native FileSaver; tidak ada dialog per file. Cadangan otomatis: lembar Bagikan.
+- Notifikasi "N file tersimpan" + lokasi; pilihan folder di Pengaturan.
+- Impor file: bar progres tipis di atas layar + keterangan file/halaman (tidak menutupi layar), UI tidak lagi "membeku".
+- scripts/android-setup.mjs + native/FileSaverPlugin.java; workflow GitHub diperbarui.
+
+## Update 8 - Android: plugin resmi, nama file, seleksi
+- Plugin penyimpanan dijadikan paket lokal capacitor-mtfilesaver (terdaftar otomatis oleh cap sync); skrip setup kini membersihkan patch lama dan memeriksa pendaftaran plugin.
+- Kartu status di Pengaturan: aktif / tidak aktif + alasan error; tombol Pilih folder menampilkan error bila gagal.
+- Nama file ekspor kembali bersih (jalur cadangan Bagikan tidak lagi memberi awalan angka).
+- Seleksi sentuhan memakai touch event (tekan lama + geser + auto-scroll), mencegah menu tekan-lama Android; berlaku untuk halaman, blok teks, dan PROYEK.
+- Seleksi proyek: centang bulat, bar aksi Terjemahkan / Hapus / Semua / Batal.
+- update-android.bat: satu klik untuk npm install + android:sync.
+
+## Update 9 - terjemahan "macet" (buku/halaman padat teks)
+- Batas waktu 150 dtk untuk permintaan AI + percobaan ulang otomatis (sebelumnya menunggu selamanya jika koneksi putus).
+- Baris status langkah di kartu "Translasi" (mengirim ke AI / menunggu kuota-jaringan / menganalisis & menghapus teks x/y).
+- Render halaman tidak lagi membekukan layar (jeda UI antar blok) dan inpainting dipercepat sekitar 40%.
+- Layar tetap menyala selama menerjemahkan/mengimpor (plugin: keepAwake), karena Android menidurkan JavaScript saat layar mati.
+
+## Update 10 - Mode Buku / Dokumen
+Masalah: hasil terjemah buku terdengar santai, saling menimpa, ukuran tidak seragam, tidak rata kiri-kanan.
+Penyebab: prompt memerintahkan "bahasa santai komik" + tata letak dirancang untuk balon manga.
+- Pengaturan > "Jenis konten": Manga/Komik atau Buku/Dokumen (tersimpan).
+- Mode Buku: prompt bahasa baku formal (PUEBI), terjemahan per PARAGRAF utuh (kalimat tidak dipotong per baris), abaikan grafik/gambar/nomor halaman.
+- Tata letak buku: rata kiri-kanan (justify), ukuran huruf seragam (persentil-30), rata atas, tumbuh ke bawah hanya di ruang kosong (tidak menimpa blok bawah), font serif, tanpa stroke.
+- Penghapus buku: seluruh kotak paragraf asli ditutup warna latar (andal, tanpa sisa huruf) pada latar rata.
+- Editor: tombol justify (☰), font "Serif (buku)", shortcut 4.
+- Prompt terjemah-ulang-blok & jalur teks-saja ikut formal pada mode Buku.
+
+## Update 11 - Deploy web (Vercel) + Google Analytics
+- package.json diperbaiki (valid); `build` = vite build (server bundling pindah ke build:server); name = manga-translate.
+- Mode mandiri web (VITE_STANDALONE di .env.production): AI dipanggil dari browser dengan API key pengguna; unduhan memakai browser.
+- vercel.json + scripts/web-prep.mjs (lepas plugin Android saat build web) + scripts/verify-files.mjs (pesan jelas bila src/ tidak terupload).
+- src/lib/analytics.ts: GA4 + event kustom; nonaktif di localhost & APK. index.html: meta description/OG.
+
+## Update 12 - Perbaikan situs Vercel + kustomisasi
+- Deteksi mode mandiri otomatis berdasarkan alamat situs (tidak lagi bergantung pada .env.production yang bisa tidak terupload) -> memperbaiki error 404 /api/translate dan unduhan file di Vercel.
+- Penghapus: teks BERWARNA pada blok non-balon (buku/narasi) kini ikut terhapus; perlindungan warna tetap di dalam balon.
+- Panduan API key (pop-up otomatis sekali + kartu "Butuh API key?" di Pengaturan).
+- src/config.ts (nama aplikasi), src/theme.css (warna/tema), README_CUSTOMIZE.md.
